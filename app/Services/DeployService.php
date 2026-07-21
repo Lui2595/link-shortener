@@ -41,8 +41,7 @@ class DeployService
             $commitAfter = $this->currentCommit();
 
             $steps[] = $this->runStep('tests', [
-                $this->phpBinary(), 'artisan', 'test',
-                '--filter=OtpAuthTest|ShortUrlApiTest|RedirectTest|ShortCodeGeneratorTest|DashboardTest',
+                $this->phpBinary(), 'artisan', 'test'
             ], (int) config('deploy.timeouts.tests', 300));
 
             if (! $steps[array_key_last($steps)]['ok']) {
