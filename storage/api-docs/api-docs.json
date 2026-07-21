@@ -1,0 +1,333 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "LPshortener API",
+        "description": "Passwordless OTP authentication and short URL management.",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "/api",
+            "description": "API base path"
+        }
+    ],
+    "paths": {
+        "/auth/otp/request": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Request a one-time login code",
+                "operationId": "821de3f8c2ec6d33cd2c1866c9d03986",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "user@example.com"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OTP sent"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    },
+                    "429": {
+                        "description": "Too many requests"
+                    }
+                }
+            }
+        },
+        "/auth/otp/verify": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Verify OTP and start a session",
+                "operationId": "7ecde6f5379d0fa48461f46a8e97ecde",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "code"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email"
+                                    },
+                                    "code": {
+                                        "type": "string",
+                                        "example": "123456"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Authenticated"
+                    },
+                    "422": {
+                        "description": "Invalid or expired code"
+                    }
+                }
+            }
+        },
+        "/auth/logout": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "End the current session",
+                "operationId": "6abf3b64a4bc7838d56346f05a5153af",
+                "responses": {
+                    "200": {
+                        "description": "Logged out"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                }
+            }
+        },
+        "/auth/me": {
+            "get": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Current authenticated user",
+                "operationId": "7edae2cdbaafc10dff8c9c4198b320a2",
+                "responses": {
+                    "200": {
+                        "description": "Current user"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                }
+            }
+        },
+        "/deploy": {
+            "post": {
+                "tags": [
+                    "Deploy"
+                ],
+                "summary": "Deploy webhook (git pull → tests → build / rollback)",
+                "description": "Requires header X-Deploy-Secret matching DEPLOY_SECRET. On test or build failure, resets git to the previous commit.",
+                "operationId": "0471c03ad6252905dcdfdfcc2175a6c1",
+                "parameters": [
+                    {
+                        "name": "X-Deploy-Secret",
+                        "in": "header",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Deploy succeeded"
+                    },
+                    "401": {
+                        "description": "Invalid secret"
+                    },
+                    "409": {
+                        "description": "Deploy already running"
+                    },
+                    "422": {
+                        "description": "Deploy failed (rolled back when possible)"
+                    },
+                    "503": {
+                        "description": "Deploy endpoint disabled"
+                    }
+                }
+            }
+        },
+        "/urls": {
+            "get": {
+                "tags": [
+                    "URLs"
+                ],
+                "summary": "List authenticated user short URLs",
+                "operationId": "9de77b23a77fb3fd951b5d9781a470a1",
+                "responses": {
+                    "200": {
+                        "description": "URL list"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "URLs"
+                ],
+                "summary": "Create a short URL",
+                "operationId": "cbc19bc31174b640e9fd60789bf0ca18",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "original_url"
+                                ],
+                                "properties": {
+                                    "original_url": {
+                                        "type": "string",
+                                        "format": "uri",
+                                        "example": "https://spot2.mx/spots/offices"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                }
+            }
+        },
+        "/urls/{id}": {
+            "get": {
+                "tags": [
+                    "URLs"
+                ],
+                "summary": "Show a short URL",
+                "operationId": "d5ac97894ff2d4306e3903e87e1e0997",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Short URL"
+                    },
+                    "404": {
+                        "description": "Not found"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "URLs"
+                ],
+                "summary": "Update a short URL destination",
+                "operationId": "37600e9150b09a53fb9b7ddea7b8eb63",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "original_url"
+                                ],
+                                "properties": {
+                                    "original_url": {
+                                        "type": "string",
+                                        "format": "uri"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Updated"
+                    },
+                    "404": {
+                        "description": "Not found"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "URLs"
+                ],
+                "summary": "Delete a short URL",
+                "operationId": "d461e64f36ed6006e0cf6acad669a2b7",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Deleted"
+                    },
+                    "404": {
+                        "description": "Not found"
+                    }
+                }
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Auth",
+            "description": "OTP login"
+        },
+        {
+            "name": "URLs",
+            "description": "Short URL CRUD"
+        },
+        {
+            "name": "Deploy",
+            "description": "Protected deploy webhook"
+        }
+    ]
+}
