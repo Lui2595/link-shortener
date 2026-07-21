@@ -41,6 +41,10 @@ class DeployService
 
             $commitAfter = $this->currentCommit();
 
+            // Cached config (config:cache) bakes APP_ENV=production and ignores
+            // phpunit.xml — CSRF stays on and feature tests get 419.
+            $this->clearCachedConfig();
+
             // Call PHPUnit directly — `artisan test` (Collision) re-spawns with
             // PHP_BINARY, which is empty under php-fpm/cgi and crashes.
             $steps[] = $this->runStep('tests', [
@@ -48,7 +52,7 @@ class DeployService
                 base_path('vendor/phpunit/phpunit/phpunit'),
                 '--configuration='.base_path('phpunit.xml'),
                 '--filter=OtpAuthTest|ShortUrlApiTest|RedirectTest|ShortCodeGeneratorTest|DashboardTest',
-            ], (int) config('deploy.timeouts.tests', 300));
+            ], (int) config('deploy.timeouts.tests', 300), $this->phpunitEnvironment());
 
             if (! $steps[array_key_last($steps)]['ok']) {
                 $rollback = $this->rollbackTo($commitBefore);
@@ -105,11 +109,12 @@ class DeployService
 
     /**
      * @param  list<string>  $command
+     * @param  array<string, string>|null  $env
      * @return array{name: string, ok: bool, output: string}
      */
-    private function runStep(string $name, array $command, int $timeout): array
+    private function runStep(string $name, array $command, int $timeout, ?array $env = null): array
     {
-        $process = new Process($command, base_path(), null, null, $timeout);
+        $process = new Process($command, base_path(), $env, null, $timeout);
 
         try {
             $process->run();
@@ -130,6 +135,42 @@ class DeployService
             'ok' => $ok,
             'output' => mb_substr($output, -8000),
         ];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function phpunitEnvironment(): array
+    {
+        return [
+            'APP_ENV' => 'testing',
+            'APP_MAINTENANCE_DRIVER' => 'file',
+            'BCRYPT_ROUNDS' => '4',
+            'BROADCAST_CONNECTION' => 'null',
+            'CACHE_STORE' => 'array',
+            'DB_CONNECTION' => 'sqlite',
+            'DB_DATABASE' => ':memory:',
+            'DB_URL' => '',
+            'MAIL_MAILER' => 'array',
+            'QUEUE_CONNECTION' => 'sync',
+            'SESSION_DRIVER' => 'array',
+            'PULSE_ENABLED' => 'false',
+            'TELESCOPE_ENABLED' => 'false',
+            'NIGHTWATCH_ENABLED' => 'false',
+        ];
+    }
+
+    private function clearCachedConfig(): void
+    {
+        foreach ([
+            base_path('bootstrap/cache/config.php'),
+            base_path('bootstrap/cache/routes-v7.php'),
+            base_path('bootstrap/cache/routes.php'),
+        ] as $path) {
+            if (is_file($path)) {
+                @unlink($path);
+            }
+        }
     }
 
     /**
