@@ -62,6 +62,21 @@ class DeployService
                 return $this->result(false, $steps, $commitBefore, $commitAfter, $rolledBack);
             }
 
+            $steps[] = $this->runStep('npm_install', [
+                $this->npmBinary(),
+                is_file(base_path('package-lock.json')) ? 'ci' : 'install',
+                '--no-audit',
+                '--no-fund',
+            ], (int) config('deploy.timeouts.npm_install', 600));
+
+            if (! $steps[array_key_last($steps)]['ok']) {
+                $rollback = $this->rollbackTo($commitBefore);
+                $steps[] = $rollback;
+                $rolledBack = $rollback['ok'];
+
+                return $this->result(false, $steps, $commitBefore, $commitAfter, $rolledBack);
+            }
+
             $steps[] = $this->runStep('npm_build', [
                 $this->npmBinary(), 'run', 'build',
             ], (int) config('deploy.timeouts.build', 300));

@@ -38,6 +38,7 @@ return [
     'timeouts' => [
         'git' => (int) env('DEPLOY_GIT_TIMEOUT', 120),
         'tests' => (int) env('DEPLOY_TEST_TIMEOUT', 300),
+        'npm_install' => (int) env('DEPLOY_NPM_INSTALL_TIMEOUT', 600),
         'build' => (int) env('DEPLOY_BUILD_TIMEOUT', 300),
     ],
 ];

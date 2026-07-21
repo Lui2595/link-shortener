@@ -123,7 +123,7 @@ Redirect lookups use `Cache::remember("short_url:{code}", 1h)`. Invalidate on up
 
 1. `git pull origin <DEPLOY_BRANCH>`
 2. Run challenge tests
-3. If OK → `npm run build`
+3. If OK → `npm ci` + `npm run build`
 4. If tests or build fail → `git reset --hard` to the previous commit
 
 ```bash
