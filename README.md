@@ -115,7 +115,7 @@ Redirect lookups use `Cache::remember("short_url:{code}", 1h)`. Invalidate on up
 
 ### GitHub Actions
 
-`.github/workflows/tests.yml` runs tests on push/PR.
+`.github/workflows/main.yml` runs tests on push/PR.
 
 ### Deploy webhook (server-side)
 

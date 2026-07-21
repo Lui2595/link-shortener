@@ -41,7 +41,7 @@ class DeployService
             $commitAfter = $this->currentCommit();
 
             $steps[] = $this->runStep('tests', [
-                PHP_BINARY, 'artisan', 'test',
+                $this->phpBinary(), 'artisan', 'test',
                 '--filter=OtpAuthTest|ShortUrlApiTest|RedirectTest|ShortCodeGeneratorTest|DashboardTest',
             ], (int) config('deploy.timeouts.tests', 300));
 
@@ -66,7 +66,7 @@ class DeployService
             }
 
             $steps[] = $this->runStep('swagger_generate', [
-                PHP_BINARY, 'artisan', 'l5-swagger:generate',
+                $this->phpBinary(), 'artisan', 'l5-swagger:generate',
             ], (int) config('deploy.timeouts.build', 300));
 
             if (! $steps[array_key_last($steps)]['ok']) {
@@ -152,6 +152,25 @@ class DeployService
     private function npmBinary(): string
     {
         return PHP_OS_FAMILY === 'Windows' ? 'npm.cmd' : 'npm';
+    }
+
+    /**
+     * Resolve the PHP CLI binary. Under php-fpm, PHP_BINARY is the FPM
+     * daemon and cannot run artisan commands.
+     */
+    private function phpBinary(): string
+    {
+        $configured = (string) config('deploy.php_binary', '');
+
+        if ($configured !== '') {
+            return $configured;
+        }
+
+        if (PHP_BINARY !== '' && ! str_contains(strtolower(PHP_BINARY), 'php-fpm')) {
+            return PHP_BINARY;
+        }
+
+        return 'php';
     }
 
     private function acquireLock(string $path): bool

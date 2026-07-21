@@ -21,6 +21,17 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | PHP CLI binary
+    |--------------------------------------------------------------------------
+    |
+    | Under php-fpm, PHP_BINARY points to the FPM daemon. Leave empty to auto-
+    | detect `php` on PATH, or set an absolute path (e.g. /usr/bin/php8.3).
+    |
+    */
+    'php_binary' => env('DEPLOY_PHP_BINARY'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Command timeouts (seconds)
     |--------------------------------------------------------------------------
     */
