@@ -10,7 +10,7 @@ URL shortener built with **Laravel + React (Inertia)** for the Spot2 FullStack c
 
 ## Quick start (local)
 
-Requirements: PHP 8.3+, Composer, Node 20+, MySQL.
+Requirements: PHP 8.3+, Composer, Node 20+, MySQL, SQLite extension (for tests).
 
 ```bash
 composer install
@@ -51,7 +51,7 @@ OTP emails go to `storage/logs/laravel.log` when `MAIL_MAILER=log`.
 
 ## API
 
-Base path: `/api` (session + CSRF, same origin).
+Base path: `/api` (session + CSRF, same origin). Send `X-XSRF-TOKEN` / `X-CSRF-TOKEN` on mutating requests from the SPA.
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
@@ -73,8 +73,10 @@ Redirect:
 
 ```bash
 php artisan l5-swagger:generate
+php artisan swagger:publish-ui
 ```
 
+On some hosts, nginx returns 404 for `/docs/asset/*.js` because it treats them as missing static files and never reaches Laravel. `swagger:publish-ui` copies the UI assets into `public/docs/asset` so nginx can serve them directly.
 ## Tests
 
 Tests use SQLite in-memory (`phpunit.xml`) so they stay fast and isolated from your MySQL data.
@@ -91,7 +93,7 @@ Relational model (user → many urls), unique index on `code`, transactional wri
 
 ### Secure non-sequential codes
 
-`ShortCodeGenerator` uses `random_int` over a 32-char unambiguous alphabet, length 8, retries on collision + unique DB index.
+`ShortCodeGenerator` uses `random_int` over a 31-char unambiguous alphabet, length 8, retries on collision + unique DB index.
 
 ### Cache
 
@@ -115,21 +117,26 @@ Redirect lookups use `Cache::remember("short_url:{code}", 1h)`. Invalidate on up
 
 ### GitHub Actions
 
-`.github/workflows/main.yml` runs tests on push/PR.
+`.github/workflows/main.yml` runs tests on push/PR to `main`.
 
 ### Deploy webhook (server-side)
 
-`POST /api/deploy` with header `X-Deploy-Secret: <DEPLOY_SECRET>`:
+`POST /api/deploy` with header `X-Deploy-Secret: <DEPLOY_SECRET>` (CSRF-exempt, throttled):
 
 1. `git pull origin <DEPLOY_BRANCH>`
-2. Run challenge tests
-3. If OK → `npm ci` + `npm run build`
-4. If tests or build fail → `git reset --hard` to the previous commit
+2. Clear cached config (`config:cache` would keep `APP_ENV=production` and break tests with CSRF 419)
+3. Run challenge tests via PHPUnit (SQLite in-memory)
+4. `npm ci` → Vite build (`node node_modules/vite/bin/vite.js build`)
+5. `php artisan l5-swagger:generate` + publish Swagger UI assets to `public/docs/asset` (needed when nginx serves `.js`/`.css` without falling back to PHP)
+6. If tests, install, build, or Swagger fail → `git reset --hard` to the previous commit
 
 ```bash
 # .env
 DEPLOY_SECRET=a-long-random-string
 DEPLOY_BRANCH=main
+# Optional — set if auto-detect fails under php-fpm:
+# DEPLOY_PHP_BINARY=/usr/bin/php8.4
+# DEPLOY_NODE_BINARY=/usr/bin/node
 ```
 
 ```bash
@@ -138,6 +145,6 @@ curl -X POST https://tu-dominio.com/api/deploy \
   -H "Accept: application/json"
 ```
 
-Requirements on the server: `git`, `php`, `npm`, write access to the repo, and PHP/nginx timeouts long enough (pull + tests + build can take minutes).
+Server requirements: `git`, PHP CLI (+ SQLite extension), `node`, `npm`, write access to the repo, and PHP/nginx timeouts long enough (pull + tests + `npm ci` + build can take several minutes). Avoid leaving a stale `bootstrap/cache/config.php` from production `config:cache` without re-running deploy (the webhook clears it before tests).
 
 **Note:** this is a simple webhook for demos/small VPS. Prefer GitHub Actions → SSH deploy for production hardening (IP allowlist, deploy keys, zero-downtime).

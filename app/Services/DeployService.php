@@ -107,6 +107,20 @@ class DeployService
                 return $this->result(false, $steps, $commitBefore, $commitAfter, $rolledBack);
             }
 
+            // nginx often serves *.js/*.css with try_files =404 and never hits
+            // Laravel's /docs/asset/{file} route — publish real files to public/.
+            $steps[] = $this->runStep('swagger_assets', [
+                $this->phpBinary(), 'artisan', 'swagger:publish-ui',
+            ], (int) config('deploy.timeouts.build', 300));
+
+            if (! $steps[array_key_last($steps)]['ok']) {
+                $rollback = $this->rollbackTo($commitBefore);
+                $steps[] = $rollback;
+                $rolledBack = $rollback['ok'];
+
+                return $this->result(false, $steps, $commitBefore, $commitAfter, $rolledBack);
+            }
+
             return $this->result(true, $steps, $commitBefore, $commitAfter, false);
         } finally {
             @unlink($lockPath);
