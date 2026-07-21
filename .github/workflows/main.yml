@@ -43,6 +43,9 @@ jobs:
       - name: Install NPM dependencies
         run: npm ci
 
+      - name: Generate Wayfinder types
+        run: php artisan wayfinder:generate --with-form
+
       - name: Build frontend
         run: npm run build
 
