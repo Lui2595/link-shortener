@@ -1,6 +1,7 @@
 import { Head, router, useForm, usePage } from '@inertiajs/react';
 import { ExternalLink, Link2, LogOut, Pencil, Plus, Trash2 } from 'lucide-react';
-import { FormEvent, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
+import type { FormEvent } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import {
@@ -47,6 +48,7 @@ export default function UrlsIndex({ urls, highlightId, flashSuccess }: Props) {
 
     useEffect(() => {
         const message = flashSuccess || flash.success;
+
         if (message) {
             toast.success(message);
         }
@@ -68,6 +70,7 @@ export default function UrlsIndex({ urls, highlightId, flashSuccess }: Props) {
 
     function saveEdit(event: FormEvent) {
         event.preventDefault();
+
         if (!editing) {
             return;
         }

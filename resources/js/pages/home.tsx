@@ -1,6 +1,7 @@
 import { Head, router, useForm, usePage } from '@inertiajs/react';
 import { Link2, LoaderCircle, LogOut } from 'lucide-react';
-import { FormEvent, useEffect, useState } from 'react';
+import { useState } from 'react';
+import type { FormEvent } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import {
@@ -38,12 +39,6 @@ export default function Home({ pendingUrl, otpRequired }: HomeProps) {
     const [email, setEmail] = useState('');
     const [code, setCode] = useState('');
     const [otpLoading, setOtpLoading] = useState(false);
-
-    useEffect(() => {
-        if (otpRequired || flash.otp_required) {
-            setOtpOpen(true);
-        }
-    }, [otpRequired, flash.otp_required]);
 
     function submitUrl(event: FormEvent) {
         event.preventDefault();
