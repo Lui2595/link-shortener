@@ -4,6 +4,7 @@ namespace App\Services;
 
 use Illuminate\Support\Facades\Log;
 use RuntimeException;
+use Symfony\Component\Process\PhpExecutableFinder;
 use Symfony\Component\Process\Process;
 use Throwable;
 
@@ -40,8 +41,13 @@ class DeployService
 
             $commitAfter = $this->currentCommit();
 
+            // Call PHPUnit directly — `artisan test` (Collision) re-spawns with
+            // PHP_BINARY, which is empty under php-fpm/cgi and crashes.
             $steps[] = $this->runStep('tests', [
-                $this->phpBinary(), 'artisan', 'test'
+                $this->phpBinary(),
+                base_path('vendor/phpunit/phpunit/phpunit'),
+                '--configuration='.base_path('phpunit.xml'),
+                '--filter=OtpAuthTest|ShortUrlApiTest|RedirectTest|ShortCodeGeneratorTest|DashboardTest',
             ], (int) config('deploy.timeouts.tests', 300));
 
             if (! $steps[array_key_last($steps)]['ok']) {
@@ -154,22 +160,48 @@ class DeployService
     }
 
     /**
-     * Resolve the PHP CLI binary. Under php-fpm, PHP_BINARY is the FPM
-     * daemon and cannot run artisan commands.
+     * Resolve a usable PHP CLI binary.
+     *
+     * Under php-fpm/cgi, PHP_BINARY is empty or points at the SAPI daemon —
+     * neither can reliably run artisan/phpunit.
      */
     private function phpBinary(): string
     {
-        $configured = (string) config('deploy.php_binary', '');
+        $configured = trim((string) config('deploy.php_binary', ''));
 
-        if ($configured !== '') {
+        if ($configured !== '' && $this->isUsablePhpCli($configured)) {
             return $configured;
         }
 
-        if (PHP_BINARY !== '' && ! str_contains(strtolower(PHP_BINARY), 'php-fpm')) {
-            return PHP_BINARY;
+        $finder = new PhpExecutableFinder;
+        $found = $finder->find(false);
+
+        if (is_string($found) && $found !== '' && $this->isUsablePhpCli($found)) {
+            return $found;
         }
 
-        return 'php';
+        foreach ([PHP_BINARY, PHP_BINDIR.DIRECTORY_SEPARATOR.'php', 'php'] as $candidate) {
+            $candidate = trim((string) $candidate);
+
+            if ($candidate !== '' && $this->isUsablePhpCli($candidate)) {
+                return $candidate;
+            }
+        }
+
+        throw new RuntimeException(
+            'Unable to locate a PHP CLI binary. Set DEPLOY_PHP_BINARY in .env (e.g. /usr/bin/php8.3).'
+        );
+    }
+
+    private function isUsablePhpCli(string $binary): bool
+    {
+        $name = strtolower(basename($binary));
+
+        if ($name === '' || str_contains($name, 'fpm') || str_contains($name, 'cgi')) {
+            return false;
+        }
+
+        return true;
     }
 
     private function acquireLock(string $path): bool
