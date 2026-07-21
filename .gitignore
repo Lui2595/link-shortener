@@ -2,6 +2,7 @@
 /bootstrap/ssr
 /node_modules
 /public/build
+/public/vendor/swagger-ui
 /public/docs
 /public/fonts-manifest.dev.json
 /public/hot

@@ -76,7 +76,7 @@ php artisan l5-swagger:generate
 php artisan swagger:publish-ui
 ```
 
-On some hosts, nginx returns 404 for `/docs/asset/*.js` because it treats them as missing static files and never reaches Laravel. `swagger:publish-ui` copies the UI assets into `public/docs/asset` so nginx can serve them directly.
+On some hosts, nginx returns 404 for Laravel-served Swagger UI `.js`/`.css` routes. Run `php artisan swagger:publish-ui` to copy assets into `public/vendor/swagger-ui` (never under `public/docs` — that shadows the `/docs` JSON endpoint).
 ## Tests
 
 Tests use SQLite in-memory (`phpunit.xml`) so they stay fast and isolated from your MySQL data.
@@ -127,7 +127,7 @@ Redirect lookups use `Cache::remember("short_url:{code}", 1h)`. Invalidate on up
 2. Clear cached config (`config:cache` would keep `APP_ENV=production` and break tests with CSRF 419)
 3. Run challenge tests via PHPUnit (SQLite in-memory)
 4. `npm ci` → Vite build (`node node_modules/vite/bin/vite.js build`)
-5. `php artisan l5-swagger:generate` + publish Swagger UI assets to `public/docs/asset` (needed when nginx serves `.js`/`.css` without falling back to PHP)
+5. `php artisan l5-swagger:generate` + `swagger:publish-ui` (assets in `public/vendor/swagger-ui` for nginx)
 6. If tests, install, build, or Swagger fail → `git reset --hard` to the previous commit
 
 ```bash

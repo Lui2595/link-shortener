@@ -9,7 +9,7 @@ class PublishSwaggerUiAssets extends Command
 {
     protected $signature = 'swagger:publish-ui';
 
-    protected $description = 'Copy Swagger UI assets to public/docs/asset for nginx static serving';
+    protected $description = 'Copy Swagger UI assets to public/vendor/swagger-ui for nginx static serving';
 
     private const FILES = [
         'swagger-ui.css',
@@ -22,12 +22,19 @@ class PublishSwaggerUiAssets extends Command
     public function handle(): int
     {
         $source = base_path('vendor/swagger-api/swagger-ui/dist');
-        $target = public_path('docs/asset');
+        $target = public_path('vendor/swagger-ui');
 
         if (! File::isDirectory($source)) {
             $this->error("Swagger UI package not found at {$source}. Run composer install.");
 
             return self::FAILURE;
+        }
+
+        // Never publish under public/docs — that directory shadows Laravel's /docs JSON route
+        // and nginx redirects /docs?api-docs.json → /docs/ (403 / mixed content).
+        if (File::isDirectory(public_path('docs'))) {
+            File::deleteDirectory(public_path('docs'));
+            $this->warn('Removed public/docs (conflicts with /docs API docs route).');
         }
 
         File::ensureDirectoryExists($target);
@@ -45,7 +52,7 @@ class PublishSwaggerUiAssets extends Command
             $this->line("Published {$file}");
         }
 
-        $this->info('Swagger UI assets published to public/docs/asset');
+        $this->info('Swagger UI assets published to public/vendor/swagger-ui');
 
         return self::SUCCESS;
     }

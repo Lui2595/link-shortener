@@ -108,7 +108,7 @@ class DeployService
             }
 
             // nginx often serves *.js/*.css with try_files =404 and never hits
-            // Laravel's /docs/asset/{file} route — publish real files to public/.
+            // Laravel asset routes — publish real files to public/vendor/swagger-ui.
             $steps[] = $this->runStep('swagger_assets', [
                 $this->phpBinary(), 'artisan', 'swagger:publish-ui',
             ], (int) config('deploy.timeouts.build', 300));
