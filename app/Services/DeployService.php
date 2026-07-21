@@ -67,6 +67,7 @@ class DeployService
                 is_file(base_path('package-lock.json')) ? 'ci' : 'install',
                 '--no-audit',
                 '--no-fund',
+                '--bin-links',
             ], (int) config('deploy.timeouts.npm_install', 600));
 
             if (! $steps[array_key_last($steps)]['ok']) {
@@ -77,8 +78,13 @@ class DeployService
                 return $this->result(false, $steps, $commitBefore, $commitAfter, $rolledBack);
             }
 
+            // Call vite via node — `.npmrc` has ignore-scripts=true and some
+            // hosts omit node_modules/.bin from PATH, so `npm run build` fails
+            // with "vite: not found" even after a successful install.
             $steps[] = $this->runStep('npm_build', [
-                $this->npmBinary(), 'run', 'build',
+                $this->nodeBinary(),
+                base_path('node_modules/vite/bin/vite.js'),
+                'build',
             ], (int) config('deploy.timeouts.build', 300));
 
             if (! $steps[array_key_last($steps)]['ok']) {
@@ -213,6 +219,17 @@ class DeployService
     private function npmBinary(): string
     {
         return PHP_OS_FAMILY === 'Windows' ? 'npm.cmd' : 'npm';
+    }
+
+    private function nodeBinary(): string
+    {
+        $configured = trim((string) config('deploy.node_binary', ''));
+
+        if ($configured !== '') {
+            return $configured;
+        }
+
+        return PHP_OS_FAMILY === 'Windows' ? 'node.exe' : 'node';
     }
 
     /**
