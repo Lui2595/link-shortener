@@ -12,7 +12,11 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
+import {
+    InputOTP,
+    InputOTPGroup,
+    InputOTPSlot,
+} from '@/components/ui/input-otp';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import { api } from '@/lib/api';
@@ -34,7 +38,9 @@ type PageProps = {
 export default function Home({ pendingUrl, otpRequired }: HomeProps) {
     const { auth, flash } = usePage<PageProps>().props;
     const form = useForm({ original_url: pendingUrl ?? '' });
-    const [otpOpen, setOtpOpen] = useState(Boolean(otpRequired || flash.otp_required));
+    const [otpOpen, setOtpOpen] = useState(
+        Boolean(otpRequired || flash.otp_required),
+    );
     const [step, setStep] = useState<'email' | 'code'>('email');
     const [email, setEmail] = useState('');
     const [code, setCode] = useState('');
@@ -65,7 +71,11 @@ export default function Home({ pendingUrl, otpRequired }: HomeProps) {
             setStep('code');
             toast.success('Revisa tu correo: te enviamos un código de acceso.');
         } catch (error) {
-            toast.error(error instanceof Error ? error.message : 'No se pudo enviar el código.');
+            toast.error(
+                error instanceof Error
+                    ? error.message
+                    : 'No se pudo enviar el código.',
+            );
         } finally {
             setOtpLoading(false);
         }
@@ -86,7 +96,9 @@ export default function Home({ pendingUrl, otpRequired }: HomeProps) {
 
             router.post('/urls/commit-pending');
         } catch (error) {
-            toast.error(error instanceof Error ? error.message : 'Código inválido.');
+            toast.error(
+                error instanceof Error ? error.message : 'Código inválido.',
+            );
         } finally {
             setOtpLoading(false);
         }
@@ -165,8 +177,9 @@ export default function Home({ pendingUrl, otpRequired }: HomeProps) {
                         Acorta tu Link
                     </h1>
                     <p className="mt-4 max-w-xl text-base text-teal-50/70 sm:text-lg">
-                        Acorta URLs con códigos seguros de 8 caracteres. Sin contraseña:
-                        inicia sesión con un código enviado a tu correo.
+                        Acorta URLs con códigos seguros de 8 caracteres. Sin
+                        contraseña: inicia sesión con un código enviado a tu
+                        correo.
                     </p>
 
                     <form
@@ -184,12 +197,17 @@ export default function Home({ pendingUrl, otpRequired }: HomeProps) {
                                 placeholder="https://example.com/tu-enlace-largo"
                                 value={form.data.original_url}
                                 onChange={(event) =>
-                                    form.setData('original_url', event.target.value)
+                                    form.setData(
+                                        'original_url',
+                                        event.target.value,
+                                    )
                                 }
                                 className="h-12 border-teal-200/20 bg-white/5 text-base text-white placeholder:text-teal-100/35 focus-visible:ring-teal-300/40"
                             />
                             {form.errors.original_url ? (
-                                <p className="text-sm text-rose-300">{form.errors.original_url}</p>
+                                <p className="text-sm text-rose-300">
+                                    {form.errors.original_url}
+                                </p>
                             ) : null}
                         </div>
                         <Button
@@ -207,8 +225,8 @@ export default function Home({ pendingUrl, otpRequired }: HomeProps) {
                         <DialogHeader>
                             <DialogTitle>Accede con tu correo</DialogTitle>
                             <DialogDescription className="text-teal-100/65">
-                                Te enviaremos un código de un solo uso para guardar tu enlace
-                                acortado.
+                                Te enviaremos un código de un solo uso para
+                                guardar tu enlace acortado.
                             </DialogDescription>
                         </DialogHeader>
 
@@ -221,7 +239,9 @@ export default function Home({ pendingUrl, otpRequired }: HomeProps) {
                                         type="email"
                                         required
                                         value={email}
-                                        onChange={(event) => setEmail(event.target.value)}
+                                        onChange={(event) =>
+                                            setEmail(event.target.value)
+                                        }
                                         placeholder="tu@empresa.com"
                                         className="border-teal-200/20 bg-white/5"
                                     />
@@ -241,7 +261,9 @@ export default function Home({ pendingUrl, otpRequired }: HomeProps) {
                         ) : (
                             <form onSubmit={verifyOtp} className="space-y-4">
                                 <div className="space-y-2">
-                                    <Label htmlFor="otp">Código de 6 dígitos</Label>
+                                    <Label htmlFor="otp">
+                                        Código de 6 dígitos
+                                    </Label>
                                     <InputOTP
                                         maxLength={6}
                                         value={code}
@@ -249,9 +271,14 @@ export default function Home({ pendingUrl, otpRequired }: HomeProps) {
                                         containerClassName="justify-center"
                                     >
                                         <InputOTPGroup>
-                                            {Array.from({ length: 6 }).map((_, index) => (
-                                                <InputOTPSlot key={index} index={index} />
-                                            ))}
+                                            {Array.from({ length: 6 }).map(
+                                                (_, index) => (
+                                                    <InputOTPSlot
+                                                        key={index}
+                                                        index={index}
+                                                    />
+                                                ),
+                                            )}
                                         </InputOTPGroup>
                                     </InputOTP>
                                 </div>

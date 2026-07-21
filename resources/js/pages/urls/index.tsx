@@ -1,5 +1,12 @@
 import { Head, router, useForm, usePage } from '@inertiajs/react';
-import { ExternalLink, Link2, LogOut, Pencil, Plus, Trash2 } from 'lucide-react';
+import {
+    ExternalLink,
+    Link2,
+    LogOut,
+    Pencil,
+    Plus,
+    Trash2,
+} from 'lucide-react';
 import { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
 import { toast } from 'sonner';
@@ -108,7 +115,8 @@ export default function UrlsIndex({ urls, highlightId, flashSuccess }: Props) {
                                 <Link2 className="size-4" />
                             </span>
                             <span className="text-lg font-semibold tracking-tight">
-                                LP<span className="text-teal-300">shortener</span>
+                                LP
+                                <span className="text-teal-300">shortener</span>
                             </span>
                         </a>
                         <div className="flex items-center gap-3 text-sm">
@@ -159,7 +167,10 @@ export default function UrlsIndex({ urls, highlightId, flashSuccess }: Props) {
                                 placeholder="https://…"
                                 value={createForm.data.original_url}
                                 onChange={(event) =>
-                                    createForm.setData('original_url', event.target.value)
+                                    createForm.setData(
+                                        'original_url',
+                                        event.target.value,
+                                    )
                                 }
                             />
                             {createForm.errors.original_url ? (
@@ -182,11 +193,21 @@ export default function UrlsIndex({ urls, highlightId, flashSuccess }: Props) {
                             <table className="min-w-full text-left text-sm">
                                 <thead className="bg-[#edf5f3] text-[#3d565c]">
                                     <tr>
-                                        <th className="px-4 py-3 font-medium">id</th>
-                                        <th className="px-4 py-3 font-medium">code</th>
-                                        <th className="px-4 py-3 font-medium">original url</th>
-                                        <th className="px-4 py-3 font-medium">clicks</th>
-                                        <th className="px-4 py-3 font-medium">actions</th>
+                                        <th className="px-4 py-3 font-medium">
+                                            id
+                                        </th>
+                                        <th className="px-4 py-3 font-medium">
+                                            code
+                                        </th>
+                                        <th className="px-4 py-3 font-medium">
+                                            original url
+                                        </th>
+                                        <th className="px-4 py-3 font-medium">
+                                            clicks
+                                        </th>
+                                        <th className="px-4 py-3 font-medium">
+                                            actions
+                                        </th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -196,7 +217,8 @@ export default function UrlsIndex({ urls, highlightId, flashSuccess }: Props) {
                                                 colSpan={5}
                                                 className="px-4 py-10 text-center text-[#6b8186]"
                                             >
-                                                Aún no tienes URLs. Crea la primera arriba.
+                                                Aún no tienes URLs. Crea la
+                                                primera arriba.
                                             </td>
                                         </tr>
                                     ) : (
@@ -235,7 +257,9 @@ export default function UrlsIndex({ urls, highlightId, flashSuccess }: Props) {
                                                             asChild
                                                         >
                                                             <a
-                                                                href={url.short_url}
+                                                                href={
+                                                                    url.short_url
+                                                                }
                                                                 target="_blank"
                                                                 rel="noreferrer"
                                                                 aria-label="Visitar"
@@ -247,7 +271,9 @@ export default function UrlsIndex({ urls, highlightId, flashSuccess }: Props) {
                                                             type="button"
                                                             size="icon"
                                                             variant="ghost"
-                                                            onClick={() => openEdit(url)}
+                                                            onClick={() =>
+                                                                openEdit(url)
+                                                            }
                                                             aria-label="Editar"
                                                         >
                                                             <Pencil className="size-4" />
@@ -256,7 +282,9 @@ export default function UrlsIndex({ urls, highlightId, flashSuccess }: Props) {
                                                             type="button"
                                                             size="icon"
                                                             variant="ghost"
-                                                            onClick={() => removeUrl(url)}
+                                                            onClick={() =>
+                                                                removeUrl(url)
+                                                            }
                                                             aria-label="Eliminar"
                                                         >
                                                             <Trash2 className="size-4 text-rose-600" />
@@ -272,14 +300,19 @@ export default function UrlsIndex({ urls, highlightId, flashSuccess }: Props) {
                     </div>
                 </main>
 
-                <Dialog open={Boolean(editing)} onOpenChange={(open) => !open && setEditing(null)}>
+                <Dialog
+                    open={Boolean(editing)}
+                    onOpenChange={(open) => !open && setEditing(null)}
+                >
                     <DialogContent>
                         <DialogHeader>
                             <DialogTitle>Editar URL</DialogTitle>
                             <DialogDescription>
                                 Actualiza el destino de{' '}
-                                <span className="font-mono">/{editing?.code}</span>. El código no
-                                cambia.
+                                <span className="font-mono">
+                                    /{editing?.code}
+                                </span>
+                                . El código no cambia.
                             </DialogDescription>
                         </DialogHeader>
                         <form onSubmit={saveEdit} className="space-y-4">
@@ -291,7 +324,10 @@ export default function UrlsIndex({ urls, highlightId, flashSuccess }: Props) {
                                     required
                                     value={editForm.data.original_url}
                                     onChange={(event) =>
-                                        editForm.setData('original_url', event.target.value)
+                                        editForm.setData(
+                                            'original_url',
+                                            event.target.value,
+                                        )
                                     }
                                 />
                                 {editForm.errors.original_url ? (
@@ -308,8 +344,15 @@ export default function UrlsIndex({ urls, highlightId, flashSuccess }: Props) {
                                 >
                                     Cancelar
                                 </Button>
-                                <Button type="submit" disabled={editForm.processing}>
-                                    {editForm.processing ? <Spinner /> : 'Guardar'}
+                                <Button
+                                    type="submit"
+                                    disabled={editForm.processing}
+                                >
+                                    {editForm.processing ? (
+                                        <Spinner />
+                                    ) : (
+                                        'Guardar'
+                                    )}
                                 </Button>
                             </DialogFooter>
                         </form>

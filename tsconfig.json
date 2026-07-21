@@ -117,5 +117,14 @@
         "resources/js/**/*.ts",
         "resources/js/**/*.d.ts",
         "resources/js/**/*.tsx"
+    ],
+    "exclude": [
+        "resources/js/components/delete-user.tsx",
+        "resources/js/components/manage-passkeys.tsx",
+        "resources/js/components/manage-two-factor.tsx",
+        "resources/js/components/two-factor-recovery-codes.tsx",
+        "resources/js/components/two-factor-setup-modal.tsx",
+        "resources/js/hooks/use-two-factor-auth.ts",
+        "resources/js/layouts/settings/**"
     ]
 }

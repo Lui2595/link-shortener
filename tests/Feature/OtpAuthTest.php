@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Mail\LoginOtpMail;
-use App\Models\ShortUrl;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;

@@ -32,10 +32,13 @@ export default function RedirectPage({ originalUrl, code }: RedirectProps) {
                 <div className="mb-6 flex size-14 items-center justify-center rounded-full bg-teal-400/15 ring-1 ring-teal-300/30">
                     <Spinner className="size-6 text-teal-300" />
                 </div>
-                <h1 className="text-2xl font-semibold tracking-tight">Wait a moment…</h1>
+                <h1 className="text-2xl font-semibold tracking-tight">
+                    Wait a moment…
+                </h1>
                 <p className="mt-2 max-w-md text-teal-100/70">
-                    Redirigiendo <span className="font-mono text-teal-200">/{code}</span> a tu
-                    destino{seconds > 0 ? ` en ${seconds}s` : ''}.
+                    Redirigiendo{' '}
+                    <span className="font-mono text-teal-200">/{code}</span> a
+                    tu destino{seconds > 0 ? ` en ${seconds}s` : ''}.
                 </p>
                 <a
                     href={originalUrl}
